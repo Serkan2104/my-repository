@@ -34,7 +34,7 @@ def login():
         if password == "clarusway":
             return render_template("secure.html", user = user_name)
         else:
-            return render_template("login.htlm", control= True, user= user_name)
+            return render_template("login.html", control= True, user = user_name)
 
 
 # Add a statement to run the Flask application
