@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Ec2 Instance and SG for kittens carousel website 
+Parameters:
+  pKeyName:
+    Description: Key name fo Ec2 Access
+    Type: AWS::EC2::KeyPair::KeyName
+  pImageId:
+    Description: Latest Linux AMI
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
+  
+Resources:
+  rSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH and HTTP
+      GroupName: SSH and HTTP
+      SecurityGroupIngress: 
+        - CidrIp: 0.0.0.0/0
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp  
+      Tags: 
+        - Key: Name
+          Value: KittensSecGroup
+  rWebServer:  
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref pImageId
+      InstanceType: t2.micro
+      KeyName: !Ref pKeyName
+      SecurityGroupIds: 
+        - !Ref rSecGroup
+      Tags: 
+        - Key: Name
+          Value: Kitten Web Server
+      UserData: !Base64 |
+        #!/bin/bash -x
+
+        #run sudo su and below command is for update the system. 
+        # we use -y not to interacted
+        yum update -y
+
+        # installling apache server
+        yum install httpd -y
+
+        # pushed the files to github and to run server we get index.html from out github directory
+        # we have to change directory this is apache content folder
+        cd /var/www/html 
+        # simdi burada variable kullaniyoruz. diger dosyalari da indiriyoruz
+        FOLDER="https://raw.githubusercontent.com/Serkan2104/my-repository/main/101-kittens-carousel-static-website-ec2/static-web"
+        wget ${FOLDER}/index.html
+        wget ${FOLDER}/cat0.jpg
+        wget ${FOLDER}/cat1.jpg
+        wget ${FOLDER}/cat2.jpg
+
+        #start and enable apache server
+
+        systemctl start httpd
+        systemctl enable httpd
+
+#Outputs:

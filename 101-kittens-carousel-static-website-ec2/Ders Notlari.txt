@@ -1,0 +1,15 @@
+(Onceki kisimlar bu nota eklenmelidir)
+
+
+Oncelikle bir yaml file olusturduk. sonra cnf-lite yaparak template olusturmaya basliyoruz.
+
+
+
+
+Simdi parameter olusturuyoruz. Parametre olusturma bize hazirlanmis bazi parametreleri referans ederek kullanma kolayligi sagliyor. 
+Amazon linuz latesy ImageId bulmak icin parameter store gidiyoruz. 
+Parameter storedaki public parameters gorebilmek icin sample bir parametre yarattik.
+Simdi amazon linux yazinda public parametereler icinde gorulebiliyor. ImageId buradan alacagiz.
+Burada aslinda direk konsol uzerinde create instance deyip amazon linuz secip ImageId kopyalayip dogrudan Onu da kullanabiliriz.
+ama bazi security concern veya vulnerable oldugunda sonraki versionlari kullanmak isteriz.
+ve baska bir bolgeden create edersen AMI id different olabilir. 
