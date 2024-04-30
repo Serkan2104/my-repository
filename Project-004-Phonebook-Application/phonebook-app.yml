@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  Template
+Parameters:
+  pVpcId:
+    Description: VPC for deployment
+    Type: AWS::EC2::VPC::Id
+
+  pSubnets:
+    Description: subnets for ALB
+    Type: List<AWS::EC2::Subnet::Id>
+  
+Resources:
+
+  rWebServerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthyThresholdCount: 2
+      Name: jacop-phone-book
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref pVpcId
+
+
+  rListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: 
+        - TargetGroupArn: !Ref rWebServerTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref rLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+
+  rLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: jacop-phone-book
+      Scheme: internet-facing
+      SecurityGroups: 
+        - !Ref rAlbSecurityGroup
+      Subnets: !Ref pSubnets
+      Type: application
+
+  rAlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP for ALB
+      VpcId: !Ref pVpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0  
+
+  rDBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Front-end access to RDS
+      VpcId: !Ref pVpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 3306
+        ToPort: 3306
+        CidrIp: 0.0.0.0/0
+
+  rDatabaseServer:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: "20"
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      BackupRetentionPeriod: 7
+      DBInstanceClass: db.t3.micro
+      DBInstanceIdentifier: jacob-phonebook-rds
+      DBName: clarusway_phonebook
+      #DBSubnetGroupName: String
+      Engine: mysql
+      EngineVersion: "8.0.34"
+      MasterUsername: admin
+      MasterUserPassword: "{{resolve:ssm-secure:/clarusway/phonebook/password:1}}"
+      MultiAZ: false
+      Port: "3306"
+      PubliclyAccessible: true
+      VPCSecurityGroups: 
+        - !Ref rDBSecurityGroup
+
+#Outputs:
+

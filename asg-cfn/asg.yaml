@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  Load blancer and autoscaling for web application
+Parameters:
+  
+Resources:
+
+  rTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: instance
+      Name: ser-target-group
+      Port: 80
+      VpcId: String
+      HealthCheckProtocol: String
+      HealthCheckPath: String
+      HealthyThresholdCount: Integer
+      UnhealthyThresholdCount: Integer
+      HealthCheckTimeoutSeconds: Integer
+      HealthCheckIntervalSeconds: Integer
+      IpAddressType: String
+      Tags: 
+        - Key: Name
+          Value:
+
+      HealthCheckEnabled: Boolean
+      HealthCheckIntervalSeconds: Integer
+      HealthCheckPath: String
+      HealthCheckPort: String
+      HealthCheckProtocol: String
+      
+      HealthyThresholdCount: Integer
+      Matcher: 
+        Matcher
+      Name: String
+      Port: Integer
+      Protocol: String
+      ProtocolVersion: String
+      Tags: 
+        - Tag
+      TargetGroupAttributes: 
+        - TargetGroupAttribute
+      Targets: 
+        - TargetDescription
+      
+      
+      VpcId: String
+
+
+   rLbSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP Traffic
+      GroupName: AllowHTTP
+      SecurityGroupIngress: 
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+      Tags: 
+        - Key: Name
+          Value: lb-allow-http
+      VpcId: String
+    
+
+Outputs:
