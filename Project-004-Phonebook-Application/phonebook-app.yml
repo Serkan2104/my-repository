@@ -29,7 +29,7 @@ Resources:
         InstanceType: t2.micro
         Keyname: !Ref pKeypair
         SecurityGroupIds:
-          - String
+          - !Ref rAlbSecurityGroup
         TagSpecifications:
           - ResourceType: instance
             Tags:
@@ -111,6 +111,22 @@ Resources:
         FromPort: 3306
         ToPort: 3306
         CidrIp: 0.0.0.0/0
+
+  rAutoscalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones:
+        !GetAZs ""
+      DesiredCapacity: "2"
+      HealthCheckGracePeriod: 300
+      HealthCheckType: ELB
+      LaunchTemplate:
+        LaunchTemplateId: !Ref rWebServer
+        Version: !GetAtt rWebServer.LatestVersionNumber
+      MaxSize: "3"
+      MinSize: "1"
+      TargetGroupARNs:
+        - !Ref rWebServerTargetGroup
 
   rDatabaseServer:
     Type: AWS::RDS::DBInstance

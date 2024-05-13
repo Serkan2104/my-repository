@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  This cfn file is used for creating a template which runs S3 static 
+  web-hosting using cloudfront distribution.
+Parameters:
+
+  pKittensDomain:
+    Description: Domain name for kittens website 
+    Type: String
+    Default: mykittens.seryag.com
+
+Resources:
+
+  rKittensBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref pKittensDomain
+      PublicAccessBlockConfiguration: 
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration: 
+        IndexDocument: index.html
+
+  rBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref rKittensBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:GetObject'
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref rKittensBucket
+                - /*
+
+
+# Outputs:
+#   BucketName: 
+    
+#   CloudfrontEndpoint:
+    
+#   FullDomainName:
