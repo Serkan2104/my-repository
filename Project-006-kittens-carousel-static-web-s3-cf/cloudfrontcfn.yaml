@@ -9,6 +9,11 @@ Parameters:
     Type: String
     Default: mykittens.seryag.com
 
+  pHostedzoneId:
+    Description: Hosted Zone Id
+    Type: AWS::Route53::HostedZone::Id
+
+
 Resources:
 
   rKittensBucket:
@@ -39,11 +44,58 @@ Resources:
               - - 'arn:aws:s3:::'
                 - !Ref rKittensBucket
                 - /*
+  rCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref pKittensDomain
+      ValidationMethod: DNS
+      DomainValidationOptions: 
+        - DomainName: !Ref pKittensDomain
+          HostedZoneId: !Ref pHostedzoneId
+
+  rCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig: 
+        Comment: CloudFront distribution for Kittens Carousel
+        Enabled: true        
+        Origins:
+          - Id: KittensOrigin
+            CustomOriginConfig: 
+               OriginProtocolPolicy: http-only
+            DomainName: !Select [2, !Split ["/", !GetAtt rKittensBucket.WebsiteURL]]
+        DefaultCacheBehavior: 
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          TargetOriginId: KittensOrigin
+          ViewerProtocolPolicy: redirect-to-https
+        PriceClass: PriceClass_100          
+        Aliases:
+          - !Ref pKittensDomain
+        ViewerCertificate: 
+          AcmCertificateArn: !Ref rCertificate
+          MinimumProtocolVersion: "TLSv1.2_2021"
+          SslSupportMethod: sni-only
+        HttpVersion: http2
+        DefaultRootObject: index.html
 
 
-# Outputs:
-#   BucketName: 
+  rDnsRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Ref pKittensDomain
+      Type: A
+      AliasTarget: 
+        DNSName: !GetAtt rCloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+      HostedZoneId: !Ref pHostedzoneId
+
+
+Outputs:
+  CloudfrontEndpoint:
+    Description: Endpoint for CloudFront
+    Value: !Join [ '', ['https://', !GetAtt rCloudFrontDistribution.DomainName]]
     
-#   CloudfrontEndpoint:
+
+    
     
 #   FullDomainName:
