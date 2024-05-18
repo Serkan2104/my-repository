@@ -1,0 +1,10 @@
+x = {
+    "name": ["a", "b", "c"]
+}
+
+x["name"] = "a"
+y = {
+    "names": ["a", "b", "c"]
+}
+
+y["names"]
